@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive comparison of REINFORCE with a learned baseline and one-step actor-critic in the same Gridworld.">
+  <title>Policy learning in the same environment</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="page-header">
+    <p class="eyebrow">Sequential Decision Making · Interactive lecture demo</p>
+    <h1>Policy learning replay</h1>
+    <p class="lede">
+      Same Gridworld, budget, discount, and seed; different update rules.
+    </p>
+  </header>
+
+  <main>
+    <section class="control-panel" aria-labelledby="controls-title">
+      <div class="control-heading">
+        <div>
+          <p class="section-label">Experiment controls</p>
+          <h2 id="controls-title">Choose what to replay</h2>
+        </div>
+        <p id="load-status" class="load-status" role="status" aria-live="polite">
+          Loading reproducible training traces…
+        </p>
+      </div>
+
+      <fieldset class="algorithm-picker" id="algorithm-picker">
+        <legend>Select one or both algorithms</legend>
+        <label class="algorithm-option">
+          <input type="checkbox" name="algorithm" value="reinforce" checked>
+          <span>
+            <strong>REINFORCE + baseline</strong>
+            <small>Monte Carlo update after the episode</small>
+          </span>
+        </label>
+        <label class="algorithm-option">
+          <input type="checkbox" name="algorithm" value="actor_critic" checked>
+          <span>
+            <strong>One-step actor–critic</strong>
+            <small>TD update after every transition</small>
+          </span>
+        </label>
+      </fieldset>
+
+      <div class="playback-controls">
+        <label>
+          <span>Playback speed</span>
+          <select id="speed-select">
+            <option value="140">Inspect</option>
+            <option value="35" selected>Lecture</option>
+            <option value="12">Fast</option>
+          </select>
+        </label>
+        <div class="button-row" aria-label="Playback controls">
+          <button id="restart-button" type="button" disabled>Restart</button>
+          <button id="rewind-button" type="button" disabled>Back 5 seconds</button>
+          <button id="play-button" class="primary" type="button" disabled aria-pressed="false">Play</button>
+        </div>
+      </div>
+
+      <label class="timeline-control" for="timeline-range">
+        <span>Training timeline</span>
+        <input id="timeline-range" type="range" min="0" max="1" value="0" disabled>
+        <output id="timeline-output">Episode —</output>
+      </label>
+
+      <div class="experiment-meta" aria-label="Shared experiment settings">
+        <span><strong>Environment</strong> 5 × 5 Gridworld</span>
+        <span><strong>Episodes</strong> <output id="episodes-output">—</output></span>
+        <span><strong>Seed</strong> <output id="seed-output">—</output></span>
+        <span><strong>Discount</strong> <output id="gamma-output">—</output></span>
+      </div>
+      <p id="playback-status" class="playback-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="learning-stage" class="learning-stage" aria-label="Synchronized learning dashboard">
+      <div class="metric-row" aria-label="Training metrics">
+      <section class="performance-card metric-card" aria-labelledby="performance-title">
+        <div class="figure-heading">
+          <div>
+            <p class="section-label">Training metric</p>
+            <h2 id="performance-title">Episodic return</h2>
+          </div>
+          <span id="episode-badge" class="badge">Episode —</span>
+        </div>
+        <canvas id="performance-canvas" width="960" height="200" role="img">
+          Episodic return and its moving average during training.
+        </canvas>
+        <p class="performance-caption">
+          Thin: each episode · thick: 20-episode moving average
+        </p>
+      </section>
+      </div>
+
+      <div class="simulation-row" aria-label="Algorithm simulations">
+      <article id="reinforce-view" class="algorithm-view">
+        <div class="algorithm-view-heading">
+          <div>
+            <p class="section-label">Monte Carlo credit</p>
+            <h2>REINFORCE + baseline</h2>
+          </div>
+          <span id="reinforce-step-badge" class="badge">Step —</span>
+        </div>
+        <figure class="algorithm-panel">
+            <h3>Simulation + estimated <i>V</i>(<i>s</i>)</h3>
+            <canvas id="reinforce-environment-canvas" width="640" height="520" role="img">
+              A Gridworld showing the REINFORCE trajectory over its estimated state values.
+            </canvas>
+            <figcaption>
+              <span class="value-key"><span>low</span><span class="value-gradient"></span><span>high <i>V</i>(<i>s</i>)</span></span>
+              <span>Blue dot: agent · orange: path · number: <i>V</i>(<i>s</i>)</span>
+            </figcaption>
+        </figure>
+      </article>
+
+      <article id="actor-critic-view" class="algorithm-view">
+        <div class="algorithm-view-heading">
+          <div>
+            <p class="section-label">One-step TD credit</p>
+            <h2>One-step actor–critic</h2>
+          </div>
+          <span id="actor-critic-step-badge" class="badge">Step —</span>
+        </div>
+        <figure class="algorithm-panel">
+            <h3>Simulation + estimated <i>V</i>(<i>s</i>)</h3>
+            <canvas id="actor-critic-environment-canvas" width="640" height="520" role="img">
+              A Gridworld showing the actor-critic trajectory over its estimated state values.
+            </canvas>
+            <figcaption>
+              <span class="value-key"><span>low</span><span class="value-gradient"></span><span>high <i>V</i>(<i>s</i>)</span></span>
+              <span>Blue dot: agent · orange: path · number: <i>V</i>(<i>s</i>)</span>
+            </figcaption>
+        </figure>
+      </article>
+      </div>
+
+      <p id="teaching-note" class="teaching-note">
+        REINFORCE updates after an episode; actor–critic can update within it.
+      </p>
+    </section>
+
+    <noscript>
+      <p class="error-message">
+        This interactive visualization requires JavaScript. The poster images
+        in this folder provide static alternatives.
+      </p>
+    </noscript>
+  </main>
+
+  <footer>
+    <p>Deterministic environment · fixed seed · no autoplay · keyboard-operable controls</p>
+  </footer>
+</body>
+</html>

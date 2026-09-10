@@ -1,0 +1,12 @@
+.DS_Store
+__pycache__/
+
+# Large uncompressed/generated replay assets kept in the local slide workspace.
+*-web-data.json
+*-animation-data.json
+*-learning.gif
+*-learning-panel.png
+*-learning-poster.png
+
+# Superseded pre-dashboard stylesheet.
+styles.css
