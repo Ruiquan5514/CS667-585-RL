@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Interactive comparison of REINFORCE with a learned baseline and one-step actor-critic in the same Gridworld.">
+  <meta name="description" content="Interactive comparison of REINFORCE, one-step actor-critic, and PPO-Clip in the same Gridworld.">
   <title>Policy learning in the same environment</title>
   <link rel="stylesheet" href="dashboard.css">
   <script src="app.js" defer></script>
@@ -13,7 +13,7 @@
     <p class="eyebrow">Sequential Decision Making · Interactive lecture demo</p>
     <h1>Policy learning replay</h1>
     <p class="lede">
-      Same Gridworld, budget, discount, and seed; different update rules.
+      Same Gridworld, 220-episode budget, discount, and seed; different update rules.
     </p>
   </header>
 
@@ -30,7 +30,7 @@
       </div>
 
       <fieldset class="algorithm-picker" id="algorithm-picker">
-        <legend>Select one or both algorithms</legend>
+        <legend>Select one or more algorithms</legend>
         <label class="algorithm-option">
           <input type="checkbox" name="algorithm" value="reinforce" checked>
           <span>
@@ -43,6 +43,13 @@
           <span>
             <strong>One-step actor–critic</strong>
             <small>TD update after every transition</small>
+          </span>
+        </label>
+        <label class="algorithm-option">
+          <input type="checkbox" name="algorithm" value="ppo" checked>
+          <span>
+            <strong>PPO-Clip</strong>
+            <small>GAE and clipped epochs after each rollout batch</small>
           </span>
         </label>
       </fieldset>
@@ -137,10 +144,30 @@
             </figcaption>
         </figure>
       </article>
+
+      <article id="ppo-view" class="algorithm-view">
+        <div class="algorithm-view-heading">
+          <div>
+            <p class="section-label">Clipped batch updates</p>
+            <h2>PPO-Clip</h2>
+          </div>
+          <span id="ppo-step-badge" class="badge">Step —</span>
+        </div>
+        <figure class="algorithm-panel">
+            <h3>Simulation + estimated <i>V</i>(<i>s</i>)</h3>
+            <canvas id="ppo-environment-canvas" width="640" height="520" role="img">
+              A Gridworld showing the PPO trajectory over its estimated state values.
+            </canvas>
+            <figcaption>
+              <span class="value-key"><span>low</span><span class="value-gradient"></span><span>high <i>V</i>(<i>s</i>)</span></span>
+              <span>Blue dot: agent · orange: path · number: <i>V</i>(<i>s</i>)</span>
+            </figcaption>
+        </figure>
+      </article>
       </div>
 
       <p id="teaching-note" class="teaching-note">
-        REINFORCE updates after an episode; actor–critic can update within it.
+        The algorithms share an interaction budget but update at different boundaries.
       </p>
     </section>
 

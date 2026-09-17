@@ -11,6 +11,11 @@ const ALGORITHMS = {
     color: "#0d408f",
     shortName: "One-step actor–critic",
   },
+  ppo: {
+    url: "ppo-web-data.json.gz",
+    color: "#167b4b",
+    shortName: "PPO-Clip",
+  },
 };
 
 const COLORS = {
@@ -54,12 +59,17 @@ const elements = {
       stepBadge: document.querySelector("#actor-critic-step-badge"),
       environmentCanvas: document.querySelector("#actor-critic-environment-canvas"),
     },
+    ppo: {
+      root: document.querySelector("#ppo-view"),
+      stepBadge: document.querySelector("#ppo-step-badge"),
+      environmentCanvas: document.querySelector("#ppo-environment-canvas"),
+    },
   },
 };
 
 const app = {
   datasets: {},
-  selectedAlgorithms: new Set(["reinforce", "actor_critic"]),
+  selectedAlgorithms: new Set(["reinforce", "actor_critic", "ppo"]),
   timeline: [],
   playhead: 0,
   timer: null,
@@ -335,9 +345,10 @@ function drawPerformance() {
     geometry.top + geometry.height + 19, { align: "right", size: 13 });
   drawLabel(context, "return", 8, geometry.top - 19, { align: "left", size: 13 });
 
+  const legendSlotWidth = geometry.width / keys.length;
   keys.forEach((key, index) => {
-    const x = geometry.left + 14;
-    const y = 12 + index * 18;
+    const x = geometry.left + index * legendSlotWidth + 8;
+    const y = 17;
     context.strokeStyle = ALGORITHMS[key].color;
     context.lineWidth = 5;
     context.beginPath();
@@ -385,13 +396,11 @@ function updateText() {
   elements.timelineOutput.value =
     `Episode ${episodeNumber} · step ${current.step} / ${current.length - 1} · ${progress}%`;
   elements.playbackStatus.textContent =
-    `${keys.length === 2 ? "Synchronized training" : ALGORITHMS[keys[0]].shortName}: ` +
+    `${keys.length > 1 ? "Synchronized training" : ALGORITHMS[keys[0]].shortName}: ` +
     `episode ${episodeNumber} of ${reference.episodes}, step ${current.step}.`;
-  elements.teachingNote.textContent = keys.length === 2
-    ? "Both algorithms advance on one continuous training clock. REINFORCE changes its value map at an episode boundary; actor–critic can change it within an episode."
-    : keys[0] === "reinforce"
-      ? "The trajectory moves first, while the value map waits for the complete Monte Carlo return."
-      : "The value map changes while the trajectory is still being generated.";
+  elements.teachingNote.textContent = keys.length > 1
+    ? "Selected algorithms share one interaction clock. REINFORCE updates after an episode, actor–critic after each transition, and PPO after each rollout batch."
+    : dataFor(keys[0]).update_note;
 }
 
 function render() {
@@ -489,17 +498,27 @@ function bindEvents() {
 }
 
 function validateDatasets() {
-  const left = dataFor("reinforce");
-  const right = dataFor("actor_critic");
+  const keys = Object.keys(ALGORITHMS);
+  const reference = dataFor(keys[0]);
   const sharedFields = ["rows", "cols", "start", "goal", "walls", "gamma", "episodes", "seed"];
-  sharedFields.forEach((field) => {
-    if (JSON.stringify(left[field]) !== JSON.stringify(right[field])) {
-      throw new Error(`Datasets disagree on shared field: ${field}`);
-    }
+  keys.slice(1).forEach((key) => {
+    sharedFields.forEach((field) => {
+      if (JSON.stringify(reference[field]) !== JSON.stringify(dataFor(key)[field])) {
+        throw new Error(`Datasets disagree on shared field: ${field}`);
+      }
+    });
   });
-  if (left.snapshots.length !== left.episodes || right.snapshots.length !== right.episodes) {
-    throw new Error("The web traces must contain every training episode.");
-  }
+  keys.forEach((key) => {
+    const data = dataFor(key);
+    if (data.snapshots.length !== data.episodes) {
+      throw new Error(`${key}: the web trace must contain every training episode.`);
+    }
+    data.snapshots.forEach((snapshot) => {
+      if (snapshot.path.length !== snapshot.value_frames.length) {
+        throw new Error(`${key}: path and value-frame lengths disagree.`);
+      }
+    });
+  });
 }
 
 async function loadDataset(url) {
@@ -526,7 +545,8 @@ async function initialize() {
     buildTimeline();
     enableControls();
     render();
-    elements.loadStatus.textContent = "Ready · full synchronized traces loaded";
+    elements.loadStatus.textContent =
+      `Ready · ${Object.keys(ALGORITHMS).length} synchronized traces loaded`;
   } catch (error) {
     elements.loadStatus.textContent = "Could not load the animation data.";
     elements.playbackStatus.classList.add("error-message");
