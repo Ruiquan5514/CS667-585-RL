@@ -9,6 +9,11 @@ student select any subset and continuously play the entire 220-episode
 training run. There is no episode-by-episode selector. A shared clock advances
 the selected agents simultaneously; a shorter trajectory remains on its final
 frame until the others finish that episode.
+
+The site navigation also links to a separate interactive MCTS/UCT illustration
+at `/mcts/`. That page provides an editable tic-tac-toe position, fixed opponent
+policies, individual or 512-simulation UCT searches, reversible simulations,
+and a complete pan-and-zoom search tree.
 The next episode then begins automatically. In each replay:
 
 - the first dashboard row begins with episodic returns and their 20-episode

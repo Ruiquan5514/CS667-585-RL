@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MCTS: Look Ahead, Make One Move</title>
+    <link rel="stylesheet" href="../site-nav.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="has-site-nav">
+    <nav class="site-nav" aria-label="Interactive demonstrations">
+      <a class="site-nav__brand" href="../">CS 667/585 · RL demonstrations</a>
+      <div class="site-nav__links">
+        <a href="../">RL algorithms</a>
+        <a href="./" aria-current="page">MCTS / UCT</a>
+      </div>
+    </nav>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Monte Carlo Tree Search</p>
+          <h1>Look several moves ahead. Make one real move.</h1>
+        </div>
+        <div class="phase-legend" aria-label="Search phase colors">
+          <span><i class="legend-dot select"></i>Last selected path</span>
+          <span><i class="legend-dot expand"></i>New node</span>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <aside class="game-panel panel">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">Real game</p>
+              <h2>Editable position</h2>
+            </div>
+            <span id="turnBadge" class="turn-badge">X to move</span>
+          </div>
+
+          <div class="edit-tools" role="group" aria-label="Board editing tool">
+            <button class="tool-button active" data-tool="X" type="button">Place X</button>
+            <button class="tool-button" data-tool="O" type="button">Place O</button>
+            <button class="tool-button" data-tool="" type="button">Erase</button>
+          </div>
+
+          <div id="mainBoard" class="main-board" role="grid" aria-label="Editable tic-tac-toe board"></div>
+
+          <div class="board-actions">
+            <button id="undoButton" class="secondary-button" type="button">Undo</button>
+            <button id="clearButton" class="secondary-button" type="button">Clear</button>
+            <button id="exampleButton" class="secondary-button" type="button">Example</button>
+          </div>
+
+          <label class="field-label" for="opponentSelect">Opponent policy</label>
+          <select id="opponentSelect">
+            <option value="row-major">Row-major: first legal square</option>
+            <option value="tactical">Tactical: win, block, then center</option>
+          </select>
+
+          <div id="statusBox" class="status-box" aria-live="polite"></div>
+
+          <div class="search-controls">
+            <button id="stepButton" class="primary-button" type="button">Run one simulation</button>
+            <button id="runButton" class="primary-button" type="button">Complete 512 simulations</button>
+            <button id="undoSimulationButton" class="secondary-button" type="button">Undo simulation</button>
+            <button id="resetSearchButton" class="secondary-button" type="button">Reset search</button>
+          </div>
+
+          <button id="makeMoveButton" class="move-button" type="button" disabled>
+            Make selected move
+          </button>
+
+          <p class="small-note">
+            X is the MCTS agent. Each tree edge contains one X move and, unless the game ends,
+            the fixed O response.
+          </p>
+        </aside>
+
+        <section class="search-panel panel">
+          <div class="search-heading">
+            <div>
+              <p class="section-kicker">Search process</p>
+              <h2>Complete UCT tree</h2>
+            </div>
+            <div class="search-readout">
+              <span id="simulationCount">0 / 512 simulations</span>
+              <strong id="phaseReadout">Ready</strong>
+            </div>
+            <div class="view-controls" role="group" aria-label="Tree view controls">
+              <button id="zoomOutButton" class="icon-button" type="button" aria-label="Zoom out">−</button>
+              <button id="zoomInButton" class="icon-button" type="button" aria-label="Zoom in">+</button>
+              <button id="fitButton" class="secondary-button" type="button">Fit tree</button>
+              <button id="rootButton" class="secondary-button" type="button">Focus root</button>
+            </div>
+          </div>
+
+          <div id="treeViewport" class="tree-viewport">
+            <svg id="treeSvg" aria-label="Interactive Monte Carlo search tree">
+              <g id="treeTransform">
+                <g id="edgeLayer"></g>
+                <g id="nodeLayer"></g>
+              </g>
+            </svg>
+            <div class="tree-help">Scroll to zoom · drag to pan · click a node to center</div>
+          </div>
+
+          <section class="root-summary" aria-labelledby="rootSummaryTitle">
+            <div class="summary-heading">
+              <div>
+                <p class="section-kicker">Decision after search</p>
+                <h3 id="rootSummaryTitle">Root actions</h3>
+              </div>
+              <p>Final move: largest visit count (N)</p>
+            </div>
+            <div id="rootBars" class="root-bars"></div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
