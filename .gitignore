@@ -8,5 +8,6 @@ __pycache__/
 *-learning-panel.png
 *-learning-poster.png
 
-# Superseded pre-dashboard stylesheet.
-styles.css
+# Superseded pre-dashboard stylesheet at the repository root. Nested pages
+# keep their own active stylesheets, such as mcts/styles.css.
+/styles.css
